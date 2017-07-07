@@ -11,7 +11,6 @@ var superagent = require("superagent");
 var requst = require('request');
 var session = require('express-session');
 var url = require('url');
-#test
 app.set('port', (process.env.PORT || 5000));
 app.use(express.static(__dirname + '/public'));
 app.use(session({secret: 'max', saveUninitialized: false, resave: false}));
