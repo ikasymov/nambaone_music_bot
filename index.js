@@ -56,7 +56,7 @@ app.post('/', function(request, response) {
             var sender_id = data['sender_id'];
             if(content === 'start'){
                 removeFileContent(sender_id);
-                methods.sendSms(chat_id, 'Введите id плейлиста', function () {
+                methods.sendSms(chat_id, 'Введите id плейлиста в namba.kg для скачивание', function () {
                     writeFile(sender_id, 'wait_id');
                 });
             }else if(readFile(sender_id) === 'wait_id-') {
