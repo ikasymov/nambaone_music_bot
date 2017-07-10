@@ -1,13 +1,13 @@
-let request = require('request');
-let index = require('./index');
-let fs = require('fs');
-let nambamusik = 'http://namba.kg/api/?service=music&action=playlist_page&token=35ffJXTW3oSmvWOR&id=';
+var request = require('request');
+var index = require('./index');
+var fs = require('fs');
+var nambamusik = 'http://namba.kg/api/?service=music&action=playlist_page&token=35ffJXTW3oSmvWOR&id=';
 
 // 'type': 'audio/mp4',
 //     'media/image'
 module.exports.sendSms = function (chat_id, text, callback) {
-    let url = index.send_url + '/chats/' + chat_id + '/write';
-    let data = {
+    var url = index.send_url + '/chats/' + chat_id + '/write';
+    var data = {
         url: url,
         method: 'POST',
         body: {
@@ -32,8 +32,8 @@ module.exports.sendSms = function (chat_id, text, callback) {
     };
 
 module.exports.sendMusic = function (chat_id, file, callback) {
-    let url = index.send_url + '/chats/' + chat_id + '/write';
-    let data = {
+    var url = index.send_url + '/chats/' + chat_id + '/write';
+    var data = {
         url: url,
         method: 'POST',
         body: {
@@ -58,8 +58,8 @@ module.exports.sendMusic = function (chat_id, file, callback) {
 };
 
 module.exports.createChat = function (id_user, callback) {
-    let url = index.send_url + '/chats/create';
-    let data = {
+    var url = index.send_url + '/chats/create';
+    var data = {
         url: url,
         method: 'POST',
         body: {
@@ -98,3 +98,45 @@ module.exports.getPlayList = function (id) {
         })
     });
 };
+//
+// function getImageToken() {
+//     request.post({
+//         url: 'https://files.namba1.co',
+//         json: true,
+//         formData: {
+//             file: {
+//                 value: './bug.jpg',
+//                 options: {
+//                     filename: 'bug.jpg'
+//                 }
+//             }
+//         }
+//     }, function (error, body) {
+//         console.log(body)
+//     })
+// }
+
+
+// var request2 = require('request');
+// var obj = {};
+// obj.parseImage = function(url, cb) {
+//     request2({url: url, encoding: null, timeout: 10000}, function(err, res, page) {
+//         if(!page) {
+//             return obj.parseImage(url, cb);
+//         }
+//         request2.post({
+//             url: 'https://files.namba1.co',
+//             json: true,
+//             formData: {
+//                 file: {
+//                     value: './',
+//                     options: {
+//                         filename: 'image.jpg'
+//                     }
+//                 }
+//             }
+//         }, function(err, res, body) {
+//             cb(body.file);
+//         });
+//     })
+// };

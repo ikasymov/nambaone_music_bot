@@ -1,16 +1,16 @@
-let express = require('express');
-let app = express();
-let hbs = require('express-handlebars');
-let bodyParser = require('body-parser');
-let methods = require('./methods');
-let models = require('./models/userModel');
-let mongoose = require('mongoose');
-let cookieParser = require('cookie-parser');
-let fs = require('fs');
-let superagent = require("superagent");
-let requst = require('request');
-let session = require('express-session');
-let url = require('url');
+var express = require('express');
+var app = express();
+var hbs = require('express-handlebars');
+var bodyParser = require('body-parser');
+var methods = require('./methods');
+var models = require('./models/userModel');
+var mongoose = require('mongoose');
+var cookieParser = require('cookie-parser');
+var fs = require('fs');
+var superagent = require("superagent");
+var requst = require('request');
+var session = require('express-session');
+var url = require('url');
 app.set('port', (process.env.PORT || 5000));
 app.use(express.static(__dirname + '/public'));
 app.use(session({secret: 'max', saveUninitialized: false, resave: false}));
@@ -25,8 +25,8 @@ app.engine('hbs', hbs({extname:'hbs', layoutsDir: __dirname + '/views/pages/'}))
 app.set('views', __dirname + '/views');
 app.set('view engine', 'hbs');
 
-let token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTk1MjQ3MDU2LCJwaG9uZSI6IjM4NDk0IiwicGFzc3dvcmQiOiIkMmEkMTAkOEo0MGZwVDN1aWhpTFdSdkRlODlnZVZNUHdmdGV6UEtpeWlXcS54dVZBNGluQ3JxUEs5NUsiLCJpc0JvdCI6dHJ1ZSwiY291bnRyeSI6dHJ1ZSwiaWF0IjoxNDk5MDg4OTAxfQ.hXOMugMPiuCU71Kj1JFArCSncEABFJvlgNHSNnjBPIw';
-let nambaurl = 'https://api.namba1.co';
+var token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTk1MjQ3MDU2LCJwaG9uZSI6IjM4NDk0IiwicGFzc3dvcmQiOiIkMmEkMTAkOEo0MGZwVDN1aWhpTFdSdkRlODlnZVZNUHdmdGV6UEtpeWlXcS54dVZBNGluQ3JxUEs5NUsiLCJpc0JvdCI6dHJ1ZSwiY291bnRyeSI6dHJ1ZSwiaWF0IjoxNDk5MDg4OTAxfQ.hXOMugMPiuCU71Kj1JFArCSncEABFJvlgNHSNnjBPIw';
+var nambaurl = 'https://api.namba1.co';
 
 // mongoose.connect(uri);
 
@@ -48,12 +48,12 @@ app.get('/', function (request, response, next) {
 
 //s
 app.post('/', function(request, response) {
-    let chat_id = request.body['data']['chat_id'];
-    let data = request.body['data'];
-    let content = request.body['data']['content'];
+    var chat_id = request.body['data']['chat_id'];
+    var data = request.body['data'];
+    var content = request.body['data']['content'];
     switch (request.body['event']){
         case 'message/new':
-            let sender_id = data['sender_id'];
+            var sender_id = data['sender_id'];
             if(content === 'start'){
                 removeFileContent(sender_id);
                 methods.sendSms(chat_id, 'Введите id плейлиста в namba для скачивание', function () {
@@ -61,8 +61,8 @@ app.post('/', function(request, response) {
                 });
             }else if(readFile(sender_id) === 'wait_id-') {
                 methods.getPlayList(content).then(function (body) {
-                    let tracks = '';
-                    for (let id in body['mp3Files']){
+                    var tracks = '';
+                    for (var id in body['mp3Files']){
                         tracks += (body['mp3Files'][id]['filename'] + '\r\n что бы скачать введите -->' + id + '\r\n')
                     }
                     methods.sendSms(chat_id, tracks,function () {
@@ -76,8 +76,8 @@ app.post('/', function(request, response) {
                 });
             }else if (readFile(sender_id).split('-').slice(0, -2).join('-') === 'wait_id-wait_track'){
                 methods.getPlayList(readFile(sender_id).split('-').slice(-2)[0]).then(function (body) {
-                let coldlink = body['mp3Files'][content]['coldlink'];
-                let stream = requst(coldlink).pipe(fs.createWriteStream('./' + user_id + 'user.mp3'));
+                var coldlink = body['mp3Files'][content]['coldlink'];
+                var stream = requst(coldlink).pipe(fs.createWriteStream('./' + user_id + 'user.mp3'));
                 setTimeout(function () {
                     methods.sendSms(chat_id, 'Это может занять от 5 секунды до 1 минуты', function () {
                     })
@@ -88,8 +88,8 @@ app.post('/', function(request, response) {
                         if (!error){
                             methods.sendMusic(chat_id, req.body['file'], function () {
                                 methods.sendSms(chat_id, 'Если не воспризводиться мелодия то это скорей всего коряво залитая музыка в nambe', function (body) {
-                                    removeFileContent(sender_id);
-                                });
+
+                                })
                                 response.end()
                             })
                         }else {
@@ -103,13 +103,13 @@ app.post('/', function(request, response) {
                 });
             }
             else{
-                let text = 'Не правильно веденные данные';
+                var text = 'Не правильно веденные данные';
                 methods.sendSms(chat_id, text, function () {
                 });
             }
         break;
         case 'user/follow':
-            let user_id = data['id'];
+            var user_id = data['id'];
             methods.createChat(user_id, function (body) {
             methods.sendSms(body['data']['id'], 'Добро пожаловать отправьте start что бы начать', function (body) {
             fs.writeFile('' + user_id + 'user.txt', function (error) {
@@ -121,7 +121,7 @@ app.post('/', function(request, response) {
         });
           break;
         case 'user/unfollow':
-            let id = data['id'];
+            var id = data['id'];
             try {
                 fs.unlinkSync('' + id + 'user.txt');
                 fs.unlinkSync('./' + id + 'user.mp3');
