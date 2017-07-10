@@ -42,7 +42,18 @@ function removeFileContent(id){
     return fs.writeFileSync('./' + id + 'user.txt', '')
 
 }
+var redis = require('redis'),
+    client = redis.createClient();
+
 app.get('/', function (request, response, next) {
+    client.on('error', function (error) {
+       console.log(error)
+    });
+    client.set("string key", "string val", redis.print);
+    console.log(client.keys('*', function (error, keys) {
+        console.log(keys)
+        
+    }));
     return response.json({'result': false, error: 'Not post method'})
 });
 
