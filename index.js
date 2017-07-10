@@ -71,11 +71,11 @@ app.post('/', function(request, response) {
             var sender_id = data['sender_id'];
             if(content === 'start') {
                 methods.sendSms(chat_id, 'Введите id плейлиста в namba для скачивание', function () {
-                    client.set(user_id, 'wait_id', function (error, value) {
+                    client.set(sender_id, 'wait_id', function (error, value) {
                     })
                 });
             }else {
-                client.get(user_id, function (error, value) {
+                client.get(sender_id, function (error, value) {
                     if (value === 'wait_id'){
                         methods.getPlayList(content).then(function (body) {
                             var tracks = '';
@@ -85,26 +85,26 @@ app.post('/', function(request, response) {
                             methods.sendSms(chat_id, tracks,function () {
                             });
 
-                            client.set(user_id, 'wait_track', function (error, value) {
+                            client.set(sender_id, 'wait_track', function (error, value) {
                             });
-                            client.set('track_' + user_id, content)
+                            client.set('track_' + sender_id, content)
                         }).catch(function (error) {
                             methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой', function () {
 
                             })
                         });
                     }else if(value === 'wait_track'){
-                        client.get('track_' + user_id, function (error, value) {
+                        client.get('track_' + sender_id, function (error, value) {
                             methods.getPlayList(value).then(function (body) {
                                 var coldlink = body['mp3Files'][content]['coldlink'];
-                                var stream = requst(coldlink).pipe(fs.createWriteStream('./' + user_id + 'user.mp3'));
+                                var stream = requst(coldlink).pipe(fs.createWriteStream('./' + sender_id + 'user.mp3'));
                                 setTimeout(function () {
                                     methods.sendSms(chat_id, 'Это может занять от 5 секунды до 1 минуты', function () {
                                     })
                                 }, 5000);
                                 stream.on('finish', function () {
                                     superagent.post('https://files.namba1.co')
-                                        .attach("file", './' + user_id + 'user.mp3').end(function (error, req) {
+                                        .attach("file", './' + sender_id + 'user.mp3').end(function (error, req) {
                                         if (!error){
                                             methods.sendMusic(chat_id, req.body['file'], function () {
                                                 methods.sendSms(chat_id, 'Если не воспризводиться мелодия то это скорей всего коряво залитая музыка в nambe', function (body) {
