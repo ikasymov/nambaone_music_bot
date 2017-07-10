@@ -42,7 +42,7 @@ function removeFileContent(id){
     return fs.writeFileSync('./' + id + 'user.txt', '')
 
 }
-var client = require('redis').createClient(process.env.REDIS_URL);
+var client = require('redis').createClient('redis://h:p61654e08cdaf832ac245aa75cd022e91936f9f79ad38a7d7a02ac85e150a7750@ec2-34-230-117-175.compute-1.amazonaws.com:20739');
 
 app.get('/', function (request, response, next) {
     client.on('error', function (error) {
