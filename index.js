@@ -42,8 +42,7 @@ function removeFileContent(id){
     return fs.writeFileSync('./' + id + 'user.txt', '')
 
 }
-var redis = require('redis'),
-    client = redis.createClient();
+var client = require('redis').createClient(process.env.REDIS_URL);
 
 app.get('/', function (request, response, next) {
     client.on('error', function (error) {
