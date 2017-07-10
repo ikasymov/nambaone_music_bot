@@ -46,7 +46,7 @@ app.get('/', function (request, response, next) {
     return response.json({'result': false, error: 'Not post method'})
 });
 
-
+//s
 app.post('/', function(request, response) {
     var chat_id = request.body['data']['chat_id'];
     var data = request.body['data'];
