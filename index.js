@@ -48,10 +48,13 @@ app.get('/', function (request, response, next) {
     client.on('error', function (error) {
        console.log(error)
     });
-    client.set("string key", "string val");
-    console.log(client.keys('*', function (error, keys) {
-        console.log(keys)
-        
+    client.hmset('users_id', {
+        '1': {'wait_id': true,
+                'select_id': false},
+        '2': {'helo world': false}
+    });
+    console.log(client.get('users_id', function (error, value) {
+        console.log(value)
     }));
     return response.json({'result': false, error: 'Not post method'})
 });
