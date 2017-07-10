@@ -48,7 +48,7 @@ app.get('/', function (request, response, next) {
     client.on('error', function (error) {
        console.log(error)
     });
-    client.set("string key", "string val", redis.print);
+    client.set("string key", "string val");
     console.log(client.keys('*', function (error, keys) {
         console.log(keys)
         
