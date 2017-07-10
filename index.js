@@ -87,7 +87,9 @@ app.post('/', function(request, response) {
                         .attach("file", './' + user_id + 'user.mp3').end(function (error, req) {
                         if (!error){
                             methods.sendMusic(chat_id, req.body['file'], function () {
-                                methods.sendSms(chat_id, 'Если не воспризводиться мелодия то это скорей всего коряво залитая музыка в nambe')
+                                methods.sendSms(chat_id, 'Если не воспризводиться мелодия то это скорей всего коряво залитая музыка в nambe', function (body) {
+
+                                })
                                 response.end()
                             })
                         }else {
