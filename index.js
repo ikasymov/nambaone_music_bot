@@ -44,8 +44,8 @@ function getMusicNameList(body, callback) {
 }
 function writeAndSendMusic(data) {
     return new Promise(function (resolve, rejected) {
-        let coldlink = data.body['mp3Files'][data.content]['coldlink'];
-        let stream = requst(coldlink).pipe(fs.createWriteStream('./' + data.sender_id + 'user.mp3'));
+        var coldlink = data.body['mp3Files'][data.content]['coldlink'];
+        var stream = requst(coldlink).pipe(fs.createWriteStream('./' + data.sender_id + 'user.mp3'));
 
         stream.on('finish', function () {
             superagent.post('https://files.namba1.co')
@@ -122,7 +122,6 @@ app.post('/', function(request, response) {
                         });
 
                     }else{
-
                         let text = 'Не правильно веденные данные';
                         methods.sendSms(chat_id, text);
                     }
@@ -131,16 +130,14 @@ app.post('/', function(request, response) {
         break;
 
         case 'user/follow':
-
             let user_id = data['id'];
             methods.createChat(user_id)
                 .then(body => {
                     methods.sendSms(user_id, 'Добро пожаловать отправьте start что бы начать');
                 });
-          break;
+            break;
 
         case 'user/unfollow':
-
             let id = data['id'];
             client.del(id, function (error, value) {
             });
