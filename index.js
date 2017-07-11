@@ -45,26 +45,30 @@ function getMusicNameList(body, callback) {
 function writeAndSendMusic(data) {
     return new Promise(function (resolve, rejected) {
         console.log(data.content);
-        var coldlink = data.body['mp3Files'][data.content]['coldlink'];
-        console.log(coldlink)
-        var stream = requst(coldlink).pipe(fs.createWriteStream('./' + data.sender_id + 'user.mp3'));
+        var coldlink = data.body['mp3Files'][data.content]['coldlink'] || false
+        if (coldlink){
+            var stream = requst(coldlink).pipe(fs.createWriteStream('./' + data.sender_id + 'user.mp3'));
 
-        stream.on('finish', function () {
-            setTimeout(function () {
-                methods.sendSms(data.chat_id, 'Это может занять от 5 секунды до 1 минуты')
-            }, 5000);
-            superagent.post('https://files.namba1.co')
-                .attach("file", './' + data.sender_id + 'user.mp3').end(function (error, req) {
-                if (!error){
-                    methods.sendMusic(data.chat_id, req.body['file'])
-                        .then(body => {
-                            resolve(body)
-                        })
-                }else {
-                    rejected(error)
-                }
+            stream.on('finish', function () {
+                setTimeout(function () {
+                    methods.sendSms(data.chat_id, 'Это может занять от 5 секунды до 1 минуты')
+                }, 5000);
+                superagent.post('https://files.namba1.co')
+                    .attach("file", './' + data.sender_id + 'user.mp3').end(function (error, req) {
+                    if (!error){
+                        methods.sendMusic(data.chat_id, req.body['file'])
+                            .then(body => {
+                                resolve(body)
+                            })
+                    }else {
+                        rejected(error)
+                    }
+                });
             });
-        });
+        }else{
+            rejected()
+        }
+
     });
 }
 
