@@ -92,6 +92,8 @@ app.post('/', function(request, response) {
                     }else if (value === 'wait_playlist'){
                         client.get('playlist_' + sender_id, function (error, value) {
                             searchPlaylist(value, function (list) {
+                                console.log(content);
+                                console.log(list[content]['id']);
                                 var playlist_id = list[content]['id'] || false;
                                 if (playlist_id){
                                     methods.getPlayList(list[content]['id'])
@@ -133,6 +135,7 @@ app.post('/', function(request, response) {
                                                 methods.sendMusic(chat_id, req.body['file'])
                                                     .then(body => {
                                                         client.set(sender_id, '');
+                                                        fs.unlink('./' + sender_id + 'user.mp3');
                                                         let sendText = 'Если не воспризводиться мелодия то это скорей всего коряво залитая музыка в nambe, для поиска новой песни введите start';
                                                         methods.sendSms(chat_id, sendText);
                                                     })
