@@ -29,39 +29,40 @@ var token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTk1MjQ3MDU2LCJwaG9uZS
 var nambaurl = 'https://api.namba1.co';
 
 // mongoose.connect(uri);
-
-function writeFile(id, text) {
-    return fs.appendFileSync('./' + id + 'user.txt', text + '-')
-}
-
-function readFile(id){
-    return fs.readFileSync('./' + id + 'user.txt', 'utf8')
-}
-
-function removeFileContent(id){
-    return fs.writeFileSync('./' + id + 'user.txt', '')
-
-}
 var client = require('redis').createClient('redis://h:p61654e08cdaf832ac245aa75cd022e91936f9f79ad38a7d7a02ac85e150a7750@ec2-34-230-117-175.compute-1.amazonaws.com:20739');
 
 app.get('/', function (request, response, next) {
-    // client.on('error', function (error) {
-    //    console.log(error)
-    // });
-    //
-    // client.set('users_id', 'VALUE');
-    // console.log(client.get('users_id').query);
-
-    // client.del('users_id', function (error, value) {
-    //     console.log(value)
-    // });
-    // client.mget('users_id', function (error, value) {
-    //     console.log(value)
-    // })
     return response.json({'result': false, error: 'Not post method'})
 });
 
-//s
+function getMusicNameList(body, callback) {
+    var tracks = '';
+    for (var id in body['mp3Files']){
+        tracks += (body['mp3Files'][id]['filename'] + '\r\n что бы скачать введите -->' + id + '\r\n')
+    }
+    callback(tracks)
+}
+function writeAndSendMusic(data) {
+    return new Promise(function (resolve, rejected) {
+        let coldlink = data.body['mp3Files'][data.content]['coldlink'];
+        let stream = requst(coldlink).pipe(fs.createWriteStream('./' + data.sender_id + 'user.mp3'));
+
+        stream.on('finish', function () {
+            superagent.post('https://files.namba1.co')
+                .attach("file", './' + data.sender_id + 'user.mp3').end(function (error, req) {
+                if (!error){
+                    methods.sendMusic(data.chat_id, req.body['file'])
+                        .then(body => {
+                            resolve(body)
+                        })
+                }else {
+                    rejected(error)
+                }
+            });
+        });
+    });
+}
+
 app.post('/', function(request, response) {
     var chat_id = request.body['data']['chat_id'];
     var data = request.body['data'];
@@ -69,80 +70,82 @@ app.post('/', function(request, response) {
     switch (request.body['event']){
         case 'message/new':
             var sender_id = data['sender_id'];
+
             if(content === 'start') {
-                methods.sendSms(chat_id, 'Введите id плейлиста в namba для скачивание', function () {
-                    client.set(sender_id, 'wait_id', function (error, value) {
+
+                methods.sendSms(chat_id, 'Введите id плейлиста в namba для скачивание')
+                    .then(body => {
+                        client.set(sender_id, 'wait_id')
                     })
-                });
             }else {
                 client.get(sender_id, function (error, value) {
-                    if (value === 'wait_id'){
-                        methods.getPlayList(content).then(function (body) {
-                            var tracks = '';
-                            for (var id in body['mp3Files']){
-                                tracks += (body['mp3Files'][id]['filename'] + '\r\n что бы скачать введите -->' + id + '\r\n')
-                            }
-                            methods.sendSms(chat_id, tracks,function () {
-                            });
 
-                            client.set(sender_id, 'wait_track', function (error, value) {
-                            });
-                            client.set('track_' + sender_id, content)
-                        }).catch(function (error) {
-                            methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой', function () {
+                    if (value === 'wait_id'){
+
+                        methods.getPlayList(content)
+                            .then(function (body) {
+                                getMusicNameList(body, function (tracks) {
+                                    methods.sendSms(chat_id, tracks);
+                                    client.set(sender_id, 'wait_track');
+                                    client.set('track_' + sender_id, content)
+                                });
 
                             })
+                            .catch(function (error) {
+                                console.log(error);
+                                methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
                         });
-                    }else if(value === 'wait_track'){
-                        client.get('track_' + sender_id, function (error, value) {
-                            methods.getPlayList(value).then(function (body) {
-                                var coldlink = body['mp3Files'][content]['coldlink'];
-                                var stream = requst(coldlink).pipe(fs.createWriteStream('./' + sender_id + 'user.mp3'));
-                                setTimeout(function () {
-                                    methods.sendSms(chat_id, 'Это может занять от 5 секунды до 1 минуты', function () {
-                                    })
-                                }, 5000);
-                                stream.on('finish', function () {
-                                    superagent.post('https://files.namba1.co')
-                                        .attach("file", './' + sender_id + 'user.mp3').end(function (error, req) {
-                                        if (!error){
-                                            methods.sendMusic(chat_id, req.body['file'], function () {
-                                                methods.sendSms(chat_id, 'Если не воспризводиться мелодия то это скорей всего коряво залитая музыка в nambe', function (body) {
 
-                                                })
-                                                response.end()
-                                            })
-                                        }else {
-                                            console.log(error)
-                                        }
+                    }else if(value === 'wait_track'){
+
+                        client.get('track_' + sender_id, function (error, value) {
+                            methods.getPlayList(value)
+                                .then(function (body) {
+                                    let data = {
+                                        body: body,
+                                        content: content,
+                                        sender_id: sender_id,
+                                        chat_id: chat_id
+                                    };
+                                    writeAndSendMusic(data).then(body => {
+                                        let sendText = 'Если не воспризводиться мелодия то это скорей всего коряво залитая музыка в nambe';
+                                        methods.sendSms(data.chat_id, sendText);
                                     });
-                                });
-                            }).catch(function (error) {
-                                methods.sendSms(chat_id, 'Такая песня не была найдено в этом плейлисте выберите еще раз', function () {
+                                    setTimeout(function () {
+                                        methods.sendSms(chat_id, 'Это может занять от 5 секунды до 1 минуты')
+                                    }, 5000);
                                 })
-                            });
+                                .catch(function (error) {
+                                    console.log(error);
+                                    methods.sendSms(chat_id, 'Такая песня не была найдено в этом плейлисте выберите еще раз');
+                                });
                         });
 
                     }else{
-                        var text = 'Не правильно веденные данные';
-                        methods.sendSms(chat_id, text, function () {
-                        });
+
+                        let text = 'Не правильно веденные данные';
+                        methods.sendSms(chat_id, text);
                     }
                 })
             }
         break;
+
         case 'user/follow':
-            var user_id = data['id'];
-            methods.createChat(user_id, function (body) {
-                methods.sendSms(body['data']['id'], 'Добро пожаловать отправьте start что бы начать', function (body) {
-                })
-            });
+
+            let user_id = data['id'];
+            methods.createChat(user_id)
+                .then(body => {
+                    methods.sendSms(user_id, 'Добро пожаловать отправьте start что бы начать');
+                });
           break;
+
         case 'user/unfollow':
-            var id = data['id'];
+
+            let id = data['id'];
             client.del(id, function (error, value) {
             });
             break;
+
         default:
             console.log(request.body['event']);
     }
