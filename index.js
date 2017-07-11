@@ -108,10 +108,10 @@ app.post('/', function(request, response) {
                                             })
                                             .catch(function (error) {
                                                 console.log(error);
-                                                methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
+                                                methods.sendSms(chat_id, 'Такой плейлист не был найден')
                                             });
                                     }else {
-                                        methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
+                                        methods.sendSms(chat_id, 'Такой плейлист не был найден')
                                     }
                                 });
 
