@@ -43,15 +43,20 @@ function getMusicNameList(body, callback) {
     }
     callback(tracks)
 }
-function searchPlaylist(content, callback) {
-    requst({
-        method: 'GET',
-        url: search_namba + content,
-        json: true
-    }, function (error, req, body) {
-        callback(body.playlists)
-
+function searchPlaylist(content) {
+    return new Promise(function (resolve, rejected) {
+        requst({
+            method: 'GET',
+            url: search_namba + content,
+            json: true
+        }, function (error, req, body) {
+            if (body.playlists.length <= 0){
+                rejected()
+            }
+            resolve(body.playlists)
+        });
     });
+
 }
 
 app.post('/', function(request, response) {
@@ -71,15 +76,19 @@ app.post('/', function(request, response) {
             }else {
                 client.get(sender_id, function (error, value) {
                     if (value === 'wait_id'){
-                        searchPlaylist(content, function (list) {
-                            let playlists = '';
-                            for (let tracks in list){
-                                playlists += list[tracks]['name'] + '\r\n что бы перейти введи' + tracks + '\r\n'
-                            }
-                            methods.sendSms(chat_id, playlists);
-                            client.set(sender_id, 'wait_playlist');
-                            client.set('playlist_' + sender_id, content)
-                        })
+                        searchPlaylist(content)
+                            .then((list) => {
+                                let playlists = '';
+                                for (let tracks in list){
+                                    playlists += list[tracks]['name'] + '\r\n что бы перейти введи' + tracks + '\r\n'
+                                }
+                                methods.sendSms(chat_id, playlists);
+                                client.set(sender_id, 'wait_playlist');
+                                client.set('playlist_' + sender_id, content)
+                            })
+                            .catch(() => {
+                                methods.sendSms(chat_id, 'Не было найдено такого плейлиста')
+                            })
                     }else if (value === 'wait_playlist'){
                         client.get('playlist_' + sender_id, function (error, value) {
                             searchPlaylist(value, function (list) {
@@ -108,17 +117,17 @@ app.post('/', function(request, response) {
                                 .then(function (body) {
                                     var coldlink = body['mp3Files'][content]['coldlink'];
                                     var stream = requst(coldlink).pipe(fs.createWriteStream('./' + sender_id + 'user.mp3'));
+                                    setTimeout(function () {
+                                        methods.sendSms(chat_id, 'Это может занять от 5 секунды до 1 минуты')
+                                    }, 5000);
                                     stream.on('finish', function () {
-                                        setTimeout(function () {
-                                            methods.sendSms(chat_id, 'Это может занять от 5 секунды до 1 минуты')
-                                        }, 5000);
                                         superagent.post('https://files.namba1.co')
                                             .attach("file", './' + sender_id + 'user.mp3').end(function (error, req) {
                                             if (!error){
                                                 methods.sendMusic(chat_id, req.body['file'])
                                                     .then(body => {
                                                         client.set(sender_id, '');
-                                                        let sendText = 'Если не воспризводиться мелодия то это скорей всего коряво залитая музыка в nambe';
+                                                        let sendText = 'Если не воспризводиться мелодия то это скорей всего коряво залитая музыка в nambe, для поиска новой песни введите start';
                                                         methods.sendSms(chat_id, sendText);
                                                     })
                                             }else {
@@ -135,7 +144,7 @@ app.post('/', function(request, response) {
 
                     }else{
                         client.set(sender_id, '');
-                        let text = 'Не правильно веденные данные';
+                        let text = 'Не правильно веденные данные введите start';
                         methods.sendSms(chat_id, text);
                     }
                 })
