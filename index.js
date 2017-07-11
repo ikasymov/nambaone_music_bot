@@ -44,10 +44,14 @@ function getMusicNameList(body, callback) {
 }
 function writeAndSendMusic(data) {
     return new Promise(function (resolve, rejected) {
+        console.log(data.body);
         var coldlink = data.body['mp3Files'][data.content]['coldlink'];
         var stream = requst(coldlink).pipe(fs.createWriteStream('./' + data.sender_id + 'user.mp3'));
 
         stream.on('finish', function () {
+            setTimeout(function () {
+                methods.sendSms(data.chat_id, 'Это может занять от 5 секунды до 1 минуты')
+            }, 5000);
             superagent.post('https://files.namba1.co')
                 .attach("file", './' + data.sender_id + 'user.mp3').end(function (error, req) {
                 if (!error){
@@ -111,9 +115,6 @@ app.post('/', function(request, response) {
                                         let sendText = 'Если не воспризводиться мелодия то это скорей всего коряво залитая музыка в nambe';
                                         methods.sendSms(data.chat_id, sendText);
                                     });
-                                    setTimeout(function () {
-                                        methods.sendSms(chat_id, 'Это может занять от 5 секунды до 1 минуты')
-                                    }, 5000);
                                 })
                                 .catch(function (error) {
                                     console.log(error);
