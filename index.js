@@ -95,9 +95,9 @@ app.post('/', function(request, response) {
                             console.log(value)
                             searchPlaylist(value)
                                 .then((list) => {
-                                    var playlist_id = list[content]['id'] || false;
-                                    if (playlist_id){
-                                        methods.getPlayList(list[content]['id'])
+                                    // var playlist_id = list[content]['id'] || false;
+                                    if (content <= list.length && typeof !content === 'string'){
+                                        methods.getPlayList(playlist_id)
                                             .then(function (body) {
                                                 getMusicNameList(body, function (tracks) {
                                                     methods.sendSms(chat_id, tracks);
