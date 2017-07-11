@@ -67,10 +67,8 @@ app.post('/', function(request, response) {
                             json: true
                         }, function (error, req, body) {
                             let playlists = '';
-                            let count = 0;
                             for (let tracks in body.playlists){
-                                playlists += tracks + '\r\n что бы перейти введи' + count;
-                                count += 1
+                                playlists += body.playlists[tracks]['name'] + '\r\n что бы перейти введи' + tracks + '\r\n'
                             }
                             methods.sendSms(chat_id, playlists)
                         });
