@@ -124,7 +124,7 @@ app.post('/', function(request, response) {
                                     var coldlink = body['mp3Files'][content]['coldlink'];
                                     var stream = requst(coldlink).pipe(fs.createWriteStream('./' + sender_id + 'user.mp3'));
                                     setTimeout(function () {
-                                        methods.sendSms(chat_id, 'Это может занять от 5 секунды до 1 минуты')
+                                        methods.sendSms(chat_id, 'Это может занять от 5 секунды до 1 минуты в зависимости от вашего скорости интернета')
                                     }, 5000);
                                     stream.on('finish', function () {
                                         superagent.post('https://files.namba1.co')
