@@ -95,25 +95,25 @@ app.post('/', function(request, response) {
                             console.log(value)
                             searchPlaylist(value)
                                 .then((list) => {
-                                    // var playlist_id = list[content]['id']
-                                //     if (playlist_id){
-                                    methods.getPlayList(list[content]['id'])
-                                        .then(function (body) {
-                                            getMusicNameList(body, function (tracks) {
-                                                methods.sendSms(chat_id, tracks);
-                                                client.set(sender_id, 'wait_track');
-                                                client.set('track_' + sender_id, list[content]['id'])
+                                    var playlist_id = list[content]['id'] || false;
+                                    if (playlist_id){
+                                        methods.getPlayList(list[content]['id'])
+                                            .then(function (body) {
+                                                getMusicNameList(body, function (tracks) {
+                                                    methods.sendSms(chat_id, tracks);
+                                                    client.set(sender_id, 'wait_track');
+                                                    client.set('track_' + sender_id, list[content]['id'])
 
+                                                });
+
+                                            })
+                                            .catch(function (error) {
+                                                console.log(error);
+                                                methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
                                             });
-
-                                        })
-                                        .catch(function (error) {
-                                            console.log(error);
-                                            methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
-                                        });
-                                    // }else {
-                                    //     methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
-                                    // }
+                                    }else {
+                                        methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
+                                    }
                                 });
 
                         });
