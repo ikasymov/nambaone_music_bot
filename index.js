@@ -43,6 +43,20 @@ function getMusicNameList(body, callback) {
     }
     callback(tracks)
 }
+function searchPlaylist(content, callback) {
+    requst({
+        method: 'GET',
+        url: search_namba + content,
+        json: true
+    }, function (error, req, body) {
+        let playlists = '';
+        for (let tracks in body.playlists){
+            playlists += body.playlists[tracks]['name'] + '\r\n что бы перейти введи' + tracks + '\r\n'
+        }
+        callback(playlists)
+
+    });
+}
 
 app.post('/', function(request, response) {
     var chat_id = request.body['data']['chat_id'];
@@ -61,36 +75,34 @@ app.post('/', function(request, response) {
             }else {
                 client.get(sender_id, function (error, value) {
                     if (value === 'wait_id'){
-                        requst({
-                            method: 'GET',
-                            url: search_namba + content,
-                            json: true
-                        }, function (error, req, body) {
-                            let playlists = '';
-                            for (let tracks in body.playlists){
-                                playlists += body.playlists[tracks]['name'] + '\r\n что бы перейти введи' + tracks + '\r\n'
-                            }
-                            methods.sendSms(chat_id, playlists)
-                        });
-                        client.set(sender_id, 'wait_playlist')
-
-
-
+                        searchPlaylist(content, chat_id, function (list) {
+                            methods.sendSms(chat_id, list);
+                            client.set(sender_id, 'wait_playlist');
+                            client.set('playlist_' + user_id, content)
+                        })
                     }else if (value === 'wait_playlist'){
-                        methods.getPlayList(content)
-                            .then(function (body) {
-                                getMusicNameList(body, function (tracks) {
-                                    methods.sendSms(chat_id, tracks);
-                                    client.set(sender_id, 'wait_track');
-                                    client.set('track_' + sender_id, content)
+                        client.get('playlist_' + user_id, function (erro, value) {
+                            searchPlaylist(value, chat_id, function (list) {
+                                console.log(list[content]);
+                                console.log(list[content]['id']);
+                                methods.getPlayList(list[content]['id'])
+                                    .then(function (body) {
+                                        getMusicNameList(body, function (tracks) {
+                                            methods.sendSms(chat_id, tracks);
+                                            client.set(sender_id, 'wait_track');
+                                            client.set('track_' + sender_id, content)
 
-                                });
+                                        });
 
-                            })
-                            .catch(function (error) {
-                                console.log(error);
-                                methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
+                                    })
+                                    .catch(function (error) {
+                                        console.log(error);
+                                        methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
+                                    });
                             });
+
+                        });
+
                     }
                     else if(value === 'wait_track'){
                         client.get('track_' + sender_id, function (error, value) {
