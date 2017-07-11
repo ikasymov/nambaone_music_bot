@@ -80,32 +80,38 @@ app.post('/', function(request, response) {
                             .then((list) => {
                                 let playlists = '';
                                 for (let tracks in list){
-                                    playlists += list[tracks]['name'] + '\r\n что бы перейти введи' + tracks + '\r\n'
+                                    playlists += list[tracks]['name'] + '\r\n что бы перейти введите -->' + tracks + '\r\n'
                                 }
                                 methods.sendSms(chat_id, playlists);
                                 client.set(sender_id, 'wait_playlist');
                                 client.set('playlist_' + sender_id, content)
                             })
                             .catch(() => {
-                                methods.sendSms(chat_id, 'Не было найдено такого плейлиста')
+                                methods.sendSms(chat_id, 'Не было найдено таких плейлистов')
                             })
                     }else if (value === 'wait_playlist'){
                         client.get('playlist_' + sender_id, function (error, value) {
                             searchPlaylist(value, function (list) {
-                                methods.getPlayList(list[content]['id'])
-                                    .then(function (body) {
-                                        getMusicNameList(body, function (tracks) {
-                                            methods.sendSms(chat_id, tracks);
-                                            client.set(sender_id, 'wait_track');
-                                            client.set('track_' + sender_id, list[content]['id'])
+                                var playlist_id = list[content]['id'] || false;
+                                if (playlist_id){
+                                    methods.getPlayList(list[content]['id'])
+                                        .then(function (body) {
+                                            getMusicNameList(body, function (tracks) {
+                                                methods.sendSms(chat_id, tracks);
+                                                client.set(sender_id, 'wait_track');
+                                                client.set('track_' + sender_id, list[content]['id'])
 
+                                            });
+
+                                        })
+                                        .catch(function (error) {
+                                            console.log(error);
+                                            methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
                                         });
+                                }else {
+                                    methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
+                                }
 
-                                    })
-                                    .catch(function (error) {
-                                        console.log(error);
-                                        methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
-                                    });
                             });
 
                         });
