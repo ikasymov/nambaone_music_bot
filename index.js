@@ -75,7 +75,6 @@ app.post('/', function(request, response) {
                     })
             }else {
                 client.get(sender_id, function (error, value) {
-                    console.log(value)
                     if (value === 'wait_id'){
                         searchPlaylist(content)
                             .then((list) => {
@@ -108,10 +107,10 @@ app.post('/', function(request, response) {
                                             })
                                             .catch(function (error) {
                                                 console.log(error);
-                                                methods.sendSms(chat_id, 'Такой плейлист не был найден')
+                                                methods.sendSms(chat_id, 'Среди списка небыл найден такой плейлист')
                                             });
                                     }else {
-                                        methods.sendSms(chat_id, 'Такой плейлист не был найден')
+                                        methods.sendSms(chat_id, 'Среди списка небыл найден такой плейлист')
                                     }
                                 });
 
