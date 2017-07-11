@@ -75,6 +75,7 @@ app.post('/', function(request, response) {
                     })
             }else {
                 client.get(sender_id, function (error, value) {
+                    console.log(value)
                     if (value === 'wait_id'){
                         searchPlaylist(content)
                             .then((list) => {
