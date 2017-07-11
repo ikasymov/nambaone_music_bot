@@ -92,7 +92,6 @@ app.post('/', function(request, response) {
                             })
                     }else if (value === 'wait_playlist'){
                         client.get('playlist_' + sender_id, function (error, value) {
-                            console.log(value)
                             searchPlaylist(value)
                                 .then((list) => {
                                     var newContent = parseInt(content);
