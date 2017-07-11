@@ -52,16 +52,15 @@ app.post('/', function(request, response) {
             var sender_id = data['sender_id'];
 
             if(content === 'start') {
-
+                client.set(sender_id, '');
                 methods.sendSms(chat_id, 'Введите id плейлиста в namba для скачивание')
                     .then(body => {
                         client.set(sender_id, 'wait_id')
                     })
             }else {
                 client.get(sender_id, function (error, value) {
-
+                    client.set(sender_id, '');
                     if (value === 'wait_id'){
-                        client.set(sender_id, '');
                         methods.getPlayList(content)
                             .then(function (body) {
                                 getMusicNameList(body, function (tracks) {
@@ -77,7 +76,7 @@ app.post('/', function(request, response) {
                         });
 
                     }else if(value === 'wait_track'){
-
+                        client.set(sender_id, '');
                         client.get('track_' + sender_id, function (error, value) {
                             methods.getPlayList(value)
                                 .then(function (body) {
@@ -103,11 +102,12 @@ app.post('/', function(request, response) {
                                 })
                                 .catch(function (error) {
                                     console.log(error);
-                                    methods.sendSms(chat_id, 'Такая песня не была найдено в этом плейлисте выберите еще раз');
+                                    methods.sendSms(chat_id, 'Такая песня не была найдено, если хотите сначала напишите start');
                                 });
                         });
 
                     }else{
+                        client.set(sender_id, '');
                         let text = 'Не правильно веденные данные';
                         methods.sendSms(chat_id, text);
                     }
