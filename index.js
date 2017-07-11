@@ -83,15 +83,12 @@ app.post('/', function(request, response) {
                     }else if (value === 'wait_playlist'){
                         client.get('playlist_' + sender_id, function (error, value) {
                             searchPlaylist(value, function (list) {
-                                console.log(list);
-                                console.log(list[content]);
-                                console.log(list[content]['id']);
                                 methods.getPlayList(list[content]['id'])
                                     .then(function (body) {
                                         getMusicNameList(body, function (tracks) {
                                             methods.sendSms(chat_id, tracks);
                                             client.set(sender_id, 'wait_track');
-                                            client.set('track_' + sender_id, content)
+                                            client.set('track_' + sender_id, list[content]['id'])
 
                                         });
 
