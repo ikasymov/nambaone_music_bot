@@ -44,8 +44,8 @@ function getMusicNameList(body, callback) {
 }
 function writeAndSendMusic(data) {
     return new Promise(function (resolve, rejected) {
-        console.log(data.body);
         var coldlink = data.body['mp3Files'][data.content]['coldlink'];
+        console.log(coldlink)
         var stream = requst(coldlink).pipe(fs.createWriteStream('./' + data.sender_id + 'user.mp3'));
 
         stream.on('finish', function () {
@@ -85,7 +85,7 @@ app.post('/', function(request, response) {
                 client.get(sender_id, function (error, value) {
 
                     if (value === 'wait_id'){
-
+                        client.set(sender_id, '');
                         methods.getPlayList(content)
                             .then(function (body) {
                                 getMusicNameList(body, function (tracks) {
