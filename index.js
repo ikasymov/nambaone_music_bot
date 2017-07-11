@@ -49,11 +49,7 @@ function searchPlaylist(content, callback) {
         url: search_namba + content,
         json: true
     }, function (error, req, body) {
-        let playlists = '';
-        for (let tracks in body.playlists){
-            playlists += body.playlists[tracks]['name'] + '\r\n что бы перейти введи' + tracks + '\r\n'
-        }
-        callback(playlists)
+        callback(body.playlists)
 
     });
 }
@@ -76,13 +72,18 @@ app.post('/', function(request, response) {
                 client.get(sender_id, function (error, value) {
                     if (value === 'wait_id'){
                         searchPlaylist(content, function (list) {
-                            methods.sendSms(chat_id, list);
+                            let playlists = '';
+                            for (let tracks in list){
+                                playlists += list[tracks]['name'] + '\r\n что бы перейти введи' + tracks + '\r\n'
+                            }
+                            methods.sendSms(chat_id, playlists);
                             client.set(sender_id, 'wait_playlist');
                             client.set('playlist_' + sender_id, content)
                         })
                     }else if (value === 'wait_playlist'){
-                        client.get('playlist_' + sender_id, function (erro, value) {
+                        client.get('playlist_' + sender_id, function (error, value) {
                             searchPlaylist(value, function (list) {
+                                console.log(list);
                                 console.log(list[content]);
                                 console.log(list[content]['id']);
                                 methods.getPlayList(list[content]['id'])
