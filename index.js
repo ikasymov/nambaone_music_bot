@@ -59,7 +59,6 @@ app.post('/', function(request, response) {
                     })
             }else {
                 client.get(sender_id, function (error, value) {
-                    client.set(sender_id, '');
                     if (value === 'wait_id'){
                         methods.getPlayList(content)
                             .then(function (body) {
@@ -67,6 +66,7 @@ app.post('/', function(request, response) {
                                     methods.sendSms(chat_id, tracks);
                                     client.set(sender_id, 'wait_track');
                                     client.set('track_' + sender_id, content)
+
                                 });
 
                             })
@@ -76,7 +76,6 @@ app.post('/', function(request, response) {
                         });
 
                     }else if(value === 'wait_track'){
-                        client.set(sender_id, '');
                         client.get('track_' + sender_id, function (error, value) {
                             methods.getPlayList(value)
                                 .then(function (body) {
@@ -91,6 +90,7 @@ app.post('/', function(request, response) {
                                             if (!error){
                                                 methods.sendMusic(chat_id, req.body['file'])
                                                     .then(body => {
+                                                        client.set(sender_id, '');
                                                         let sendText = 'Если не воспризводиться мелодия то это скорей всего коряво залитая музыка в nambe';
                                                         methods.sendSms(chat_id, sendText);
                                                     })
