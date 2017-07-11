@@ -81,7 +81,7 @@ app.post('/', function(request, response) {
                         client.get('track_' + sender_id, function (error, value) {
                             methods.getPlayList(value)
                                 .then(function (body) {
-                                    var coldlink = data.body['mp3Files'][content]['coldlink'];
+                                    var coldlink = body['mp3Files'][content]['coldlink'];
                                     var stream = requst(coldlink).pipe(fs.createWriteStream('./' + sender_id + 'user.mp3'));
                                     stream.on('finish', function () {
                                         setTimeout(function () {
