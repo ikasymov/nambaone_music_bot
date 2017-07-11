@@ -27,11 +27,12 @@ app.set('view engine', 'hbs');
 
 var token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTk1MjQ3MDU2LCJwaG9uZSI6IjM4NDk0IiwicGFzc3dvcmQiOiIkMmEkMTAkOEo0MGZwVDN1aWhpTFdSdkRlODlnZVZNUHdmdGV6UEtpeWlXcS54dVZBNGluQ3JxUEs5NUsiLCJpc0JvdCI6dHJ1ZSwiY291bnRyeSI6dHJ1ZSwiaWF0IjoxNDk5MDg4OTAxfQ.hXOMugMPiuCU71Kj1JFArCSncEABFJvlgNHSNnjBPIw';
 var nambaurl = 'https://api.namba1.co';
-
+var search_namba = 'http://namba.kg/api/?service=home&action=search&token=scDGbhUjLt1lk6Ii&type=playlists&query=';
 // mongoose.connect(uri);
 var client = require('redis').createClient('redis://h:p61654e08cdaf832ac245aa75cd022e91936f9f79ad38a7d7a02ac85e150a7750@ec2-34-230-117-175.compute-1.amazonaws.com:20739');
 
 app.get('/', function (request, response, next) {
+
     return response.json({'result': false, error: 'Not post method'})
 });
 
@@ -53,13 +54,29 @@ app.post('/', function(request, response) {
 
             if(content === 'start') {
                 client.set(sender_id, '');
-                methods.sendSms(chat_id, 'Введите id плейлиста в namba для скачивание')
+                methods.sendSms(chat_id, 'Введите название плейлиста в namba для скачивание')
                     .then(body => {
                         client.set(sender_id, 'wait_id')
                     })
             }else {
                 client.get(sender_id, function (error, value) {
                     if (value === 'wait_id'){
+                        requst({
+                            method: 'GET',
+                            url: search_namba + content,
+                            json: true
+                        }, function (error, req, body) {
+                            let playlists = '';
+                            for (let tracks in body.playlists){
+                                playlists += body.playlists[tracks]['name'] + '\r\n что бы перейти введи' + tracks
+                            }
+                            methods.sendSms(chat_id, playlists)
+                        });
+                        client.set(sender_id, 'wait_playlist')
+
+
+
+                    }else if (value === 'wait_playlist'){
                         methods.getPlayList(content)
                             .then(function (body) {
                                 getMusicNameList(body, function (tracks) {
@@ -73,9 +90,9 @@ app.post('/', function(request, response) {
                             .catch(function (error) {
                                 console.log(error);
                                 methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
-                        });
-
-                    }else if(value === 'wait_track'){
+                            });
+                    }
+                    else if(value === 'wait_track'){
                         client.get('track_' + sender_id, function (error, value) {
                             methods.getPlayList(value)
                                 .then(function (body) {
