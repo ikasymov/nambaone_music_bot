@@ -164,6 +164,9 @@ app.post('/', function(request, response) {
             methods.createChat(user_id)
                 .then(body => {
                     methods.sendSms(user_id, 'Добро пожаловать отправьте start что бы начать');
+                })
+                .catch(error => {
+                    console.log(error)
                 });
             break;
 
