@@ -96,8 +96,10 @@ app.post('/', function(request, response) {
                             searchPlaylist(value)
                                 .then((list) => {
                                     var newContent = parseInt(content);
-                                    console.log(typeof !newContent === 'string');
-                                    console.log(newContent<= list.length - 1);
+                                    console.log(newContent);
+                                    console.log(typeof newContent);
+                                    console.log(typeof !newContent === 'string', 'typeof');
+                                    console.log(newContent<= list.length - 1, 'length');
                                     if (newContent<= list.length - 1 && typeof !newContent === 'string'){
                                         methods.getPlayList(list[content]['id'])
                                             .then(function (body) {
