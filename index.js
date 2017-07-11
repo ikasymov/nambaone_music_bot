@@ -102,7 +102,7 @@ app.post('/', function(request, response) {
                                 })
                                 .catch(function (error) {
                                     console.log(error);
-                                    methods.sendSms(chat_id, 'Такая песня не была найдено, если хотите сначала напишите start');
+                                    methods.sendSms(chat_id, 'Такая песня не была найдено введи правильный номер песни, либо начните с начала отправив start');
                                 });
                         });
 
