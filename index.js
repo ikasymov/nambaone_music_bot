@@ -93,11 +93,10 @@ app.post('/', function(request, response) {
                     }else if (value === 'wait_playlist'){
                         client.get('playlist_' + sender_id, function (error, value) {
                             console.log(value)
-                            searchPlaylist(value, function (list) {
-                                console.log(content);
-                                console.log(list[content]['id']);
-                                var playlist_id = list[content]['id'] || false;
-                                if (playlist_id){
+                            searchPlaylist(value)
+                                .then((list) => {
+                                    // var playlist_id = list[content]['id']
+                                //     if (playlist_id){
                                     methods.getPlayList(list[content]['id'])
                                         .then(function (body) {
                                             getMusicNameList(body, function (tracks) {
@@ -112,11 +111,10 @@ app.post('/', function(request, response) {
                                             console.log(error);
                                             methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
                                         });
-                                }else {
-                                    methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
-                                }
-
-                            });
+                                    // }else {
+                                    //     methods.sendSms(chat_id, 'Такой плейлист не был найден выберите другой')
+                                    // }
+                                });
 
                         });
 
