@@ -66,8 +66,7 @@ app.post('/', function(request, response) {
     switch (request.body['event']){
         case 'message/new':
             var sender_id = data['sender_id'];
-
-            if(content === 'start') {
+            if(content.toLowerCase() === 'start' || content.toLowerCase() === 'старт') {
                 client.set(sender_id, '');
                 methods.sendSms(chat_id, 'Введите название плейлиста в namba для скачивание')
                     .then(body => {
@@ -134,7 +133,7 @@ app.post('/', function(request, response) {
                                                     .then(body => {
                                                         client.set(sender_id, '');
                                                         fs.unlink('./' + sender_id + 'user.mp3');
-                                                        let sendText = 'Если не воспризводиться мелодия то это скорей всего коряво залитая музыка в nambe, для поиска новой песни введите start';
+                                                        let sendText = 'Если не воспризводиться мелодия то это скорей всего коряво залитая музыка в nambe, для поиска новой песни введите "start"';
                                                         methods.sendSms(chat_id, sendText);
                                                     })
                                             }else {
@@ -145,13 +144,13 @@ app.post('/', function(request, response) {
                                 })
                                 .catch(function (error) {
                                     console.log(error);
-                                    methods.sendSms(chat_id, 'Такая песня не была найдено введи правильный номер песни, либо начните с начала отправив start');
+                                    methods.sendSms(chat_id, 'Такая песня не была найдено введите правильный номер песни, либо начните с начала отправив "start"');
                                 });
                         });
 
                     }else{
                         client.set(sender_id, '');
-                        let text = 'Не правильно веденные данные введите start';
+                        let text = 'Не правильно веденные данные введите "start"';
                         methods.sendSms(chat_id, text);
                     }
                 })
