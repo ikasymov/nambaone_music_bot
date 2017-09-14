@@ -59,7 +59,29 @@ function searchPlaylist(content) {
 
 }
 
-app.post('/', function(request, response) {
+async function setTyppingStatus(chatId, status){
+  let setStatus = {
+    true: 'typing',
+    false: 'stoptyping'
+  };
+  let data = {
+    url: 'https://namba1.co/api' + '/chats/' + chatId + '/' + setStatus[status],
+    method: 'GET',
+    headers: {
+      'X-Namba-Auth-Token': token
+    }
+  };
+  return new Promise((resolve, reject)=>{
+    request(data, (error, req, body)=>{
+      if(error){
+        reject(error)
+      }
+      resolve(true)
+    })
+  });
+};
+
+app.post('/', async function(request, response) {
     var chat_id = request.body['data']['chat_id'];
     var data = request.body['data'];
     var content = request.body['data']['content'];
@@ -73,23 +95,29 @@ app.post('/', function(request, response) {
                         client.set(sender_id, 'wait_id')
                     })
             }else {
-                client.get(sender_id, function (error, value) {
+                client.get(sender_id, async function (error, value) {
                     if (value === 'wait_id'){
+                        await setTyppingStatus(chat_id, true);
                         searchPlaylist(content)
                             .then((list) => {
                                 let playlists = '';
                                 for (let tracks in list){
                                     playlists += list[tracks]['name'] + '\r\n что бы перейти введите -->' + tracks + '\r\n'
                                 }
-                                methods.sendSms(chat_id, playlists);
+                                setTyppingStatus(chat_id, false).then(result=>{
+                                  methods.sendSms(chat_id, playlists);
+                                });
                                 client.set(sender_id, 'wait_playlist');
                                 client.set('playlist_' + sender_id, content)
                             })
                             .catch(() => {
+                              setTyppingStatus(chat_id, false).then(result=>{
                                 methods.sendSms(chat_id, 'Не было найдено таких плейлистов')
+                              });
                             })
                     }else if (value === 'wait_playlist'){
-                        client.get('playlist_' + sender_id, function (error, value) {
+                        client.get('playlist_' + sender_id, async function (error, value) {
+                            await setTyppingStatus(chat_id, true);
                             searchPlaylist(value)
                                 .then((list) => {
                                     var newContent = parseInt(content);
@@ -97,19 +125,24 @@ app.post('/', function(request, response) {
                                         methods.getPlayList(list[content]['id'])
                                             .then(function (body) {
                                                 getMusicNameList(body, function (tracks) {
-                                                    methods.sendSms(chat_id, tracks);
-                                                    client.set(sender_id, 'wait_track');
-                                                    client.set('track_' + sender_id, list[content]['id'])
-
+                                                    setTyppingStatus(chat_id, false).then(result=>{
+                                                      methods.sendSms(chat_id, tracks);
+                                                      client.set(sender_id, 'wait_track');
+                                                      client.set('track_' + sender_id, list[content]['id'])
+                                                    })
                                                 });
 
                                             })
                                             .catch(function (error) {
                                                 console.log(error);
-                                                methods.sendSms(chat_id, 'Среди списка небыл найден такой плейлист')
+                                                setTyppingStatus(chat_id, false).then(result=>{
+                                                  methods.sendSms(chat_id, 'Среди списка небыл найден такой плейлист')
+                                                })
                                             });
                                     }else {
+                                      setTyppingStatus(chat_id, false).then(result=>{
                                         methods.sendSms(chat_id, 'Среди списка небыл найден такой плейлист')
+                                      })
                                     }
                                 });
 
@@ -117,7 +150,8 @@ app.post('/', function(request, response) {
 
                     }
                     else if(value === 'wait_track'){
-                        client.get('track_' + sender_id, function (error, value) {
+                        client.get('track_' + sender_id, async function (error, value) {
+                          await setTyppingStatus(chat_id, true);
                             methods.getPlayList(value)
                                 .then(function (body) {
                                     var coldlink = body['mp3Files'][content]['coldlink'];
@@ -134,7 +168,9 @@ app.post('/', function(request, response) {
                                                         client.set(sender_id, '');
                                                         fs.unlink('./' + sender_id + 'user.mp3');
                                                         let sendText = 'Если не воспризводиться мелодия то это скорей всего коряво залитая музыка в nambe, для поиска новой песни введите "start"';
-                                                        methods.sendSms(chat_id, sendText);
+                                                        setTyppingStatus(chat_id, false).then(result=>{
+                                                          methods.sendSms(chat_id, sendText);
+                                                        });
                                                     })
                                             }else {
                                                 console.log(error)
@@ -142,8 +178,8 @@ app.post('/', function(request, response) {
                                         });
                                     });
                                 })
-                                .catch(function (error) {
-                                    console.log(error);
+                                .catch(async function (error) {
+                                    await setTyppingStatus(chat_id, false);
                                     methods.sendSms(chat_id, 'Такая песня не была найдено введите правильный номер песни, либо начните с начала отправив "start"');
                                 });
                         });
