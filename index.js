@@ -72,7 +72,7 @@ async function setTyppingStatus(chatId, status){
     }
   };
   return new Promise((resolve, reject)=>{
-    request(data, (error, req, body)=>{
+    requst(data, (error, req, body)=>{
       if(error){
         reject(error)
       }
